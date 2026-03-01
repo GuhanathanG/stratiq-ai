@@ -2,6 +2,11 @@ import streamlit as st
 import sqlite3
 import pandas as pd
 
+# ===== AUTH PROTECTION =====
+if not st.session_state.get("authenticated", False):
+    st.warning("Please login first.")
+    st.stop()
+
 st.set_page_config(layout="wide")
 
 st.markdown("# 📊 Scenario Comparison Dashboard")
