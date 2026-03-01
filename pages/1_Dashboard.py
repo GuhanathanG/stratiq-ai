@@ -35,7 +35,7 @@ col1.metric("Revenue", f"₹{revenue:,.0f}")
 col2.metric("Profit", f"₹{profit:,.0f}")
 col3.metric("IRR", f"{irr:.2%}" if irr else "N/A")
 
-st.markdown("NPV:", f"₹{npv:,.0f}")
+st.markdown(f"**NPV:** ₹{npv:,.0f}")
 
 st.markdown("---")
 
