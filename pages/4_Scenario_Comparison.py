@@ -11,8 +11,31 @@ st.markdown("---")
 # ===== CONNECT TO DATABASE =====
 
 conn = sqlite3.connect("stratiq.db")
-df = pd.read_sql("SELECT * FROM scenarios", conn)
+cursor = conn.cursor()
+
+# Create table if not exists
+cursor.execute("""
+CREATE TABLE IF NOT EXISTS scenarios (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    price REAL,
+    units REAL,
+    profit REAL,
+    irr REAL,
+    ltv_cac REAL
+)
+""")
+
+conn.commit()
+
+# Read data safely
+try:
+    df = pd.read_sql("SELECT * FROM scenarios", conn)
+except:
+    df = pd.DataFrame()
+
 conn.close()
+
+# ===== DISPLAY DATA =====
 
 if df.empty:
     st.warning("No saved scenarios found. Save scenarios from the Dashboard first.")
@@ -28,24 +51,20 @@ else:
     profit_chart.index = [f"Scenario {i+1}" for i in range(len(df))]
     st.bar_chart(profit_chart)
 
-    st.markdown("## 📊 IRR Comparison")
-
     if "irr" in df.columns:
+        st.markdown("## 📊 IRR Comparison")
         irr_chart = df[["irr"]].copy()
         irr_chart.index = [f"Scenario {i+1}" for i in range(len(df))]
         st.bar_chart(irr_chart)
 
-    # ===== IDENTIFY BEST SCENARIO =====
+    best_profit_index = df["profit"].idxmax()
+    best_scenario = df.loc[best_profit_index]
 
-    if "profit" in df.columns:
-        best_profit_index = df["profit"].idxmax()
-        best_scenario = df.loc[best_profit_index]
+    st.markdown("---")
+    st.success(f"""
+🏆 Best Performing Scenario:
 
-        st.markdown("---")
-        st.success(f"""
-        🏆 Best Performing Scenario:
-
-        Profit: ₹{best_scenario['profit']:,.0f}
-        IRR: {best_scenario['irr']:.2%} (if available)
-        LTV/CAC: {best_scenario['ltv_cac'] if 'ltv_cac' in df.columns else 'N/A'}
-        """)
+Profit: ₹{best_scenario['profit']:,.0f}
+IRR: {best_scenario['irr']:.2%}
+LTV/CAC: {best_scenario['ltv_cac'] if 'ltv_cac' in df.columns else 'N/A'}
+""")
