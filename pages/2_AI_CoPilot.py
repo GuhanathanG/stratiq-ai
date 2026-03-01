@@ -9,50 +9,66 @@ load_dotenv()
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 st.markdown("# 🤖 STRATIQ AI — Strategic Co-Pilot")
-st.markdown("Investor-grade financial & strategy intelligence.")
+st.markdown("Live financial intelligence based on your dashboard.")
 st.markdown("---")
 
 if "chat_history" not in st.session_state:
     st.session_state.chat_history = []
 
-user_input = st.chat_input("Ask about scalability, pricing, funding, risks...")
+financial_data = st.session_state.get("financial_data", None)
 
-if user_input:
+if not financial_data:
+    st.warning("Please configure values in the Financial Dashboard first.")
+else:
 
-    st.session_state.chat_history.append(
-        {"role": "user", "content": user_input}
-    )
+    user_input = st.chat_input("Ask about scalability, pricing, funding, risks...")
 
-    system_prompt = """
-You are STRATIQ AI — a senior financial strategist and investment analyst.
+    if user_input:
 
-Respond in a structured professional format:
-
-1. Situation Analysis
-2. Financial Implications
-3. Strategic Insight
-4. Risks (if any)
-5. Recommendation
-
-Be concise, analytical, and executive-level.
-"""
-
-    with st.spinner("Analyzing business scenario..."):
-        response = client.chat.completions.create(
-            model="gpt-4.1-mini",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                *st.session_state.chat_history
-            ]
+        st.session_state.chat_history.append(
+            {"role": "user", "content": user_input}
         )
 
-    reply = response.choices[0].message.content
+        system_prompt = f"""
+You are STRATIQ AI — a senior financial strategist.
 
-    st.session_state.chat_history.append(
-        {"role": "assistant", "content": reply}
-    )
+Analyze the business using the real financial data below.
 
-# Display chat
-for msg in st.session_state.chat_history:
-    with st.chat_message(msg["role"]):
-        st.write(msg["content"])
+Financial Data:
+Price: {financial_data['price']}
+Units: {financial_data['units']}
+Revenue: {financial_data['revenue']}
+Profit: {financial_data['profit']}
+IRR: {financial_data['irr']}
+NPV: {financial_data['npv']}
+Growth Rate: {financial_data['growth_rate']}
+Fixed Cost: {financial_data['fixed_cost']}
+Variable Cost: {financial_data['variable_cost']}
+
+Respond in structured format:
+
+1. Situation Analysis
+2. Financial Interpretation
+3. Strategic Insight
+4. Risks
+5. Recommendation
+"""
+
+        with st.spinner("Analyzing business..."):
+            response = client.chat.completions.create(
+                model="gpt-4.1-mini",
+                messages=[
+                    {"role": "system", "content": system_prompt},
+                    *st.session_state.chat_history
+                ]
+            )
+
+        reply = response.choices[0].message.content
+
+        st.session_state.chat_history.append(
+            {"role": "assistant", "content": reply}
+        )
+
+    for msg in st.session_state.chat_history:
+        with st.chat_message(msg["role"]):
+            st.write(msg["content"])

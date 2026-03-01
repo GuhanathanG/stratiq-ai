@@ -20,6 +20,18 @@ discount_rate = st.sidebar.slider("Discount Rate (%)", 0, 30, 10) / 100
 # Calculations
 revenue = price * units
 profit = revenue - (variable_cost * units + fixed_cost)
+# ===== STORE DATA FOR AI =====
+st.session_state.financial_data = {
+    "price": price,
+    "units": units,
+    "variable_cost": variable_cost,
+    "fixed_cost": fixed_cost,
+    "growth_rate": growth_rate,
+    "revenue": revenue,
+    "profit": profit,
+    "irr": irr,
+    "npv": npv
+}
 
 cash_flows = [-initial_investment] + [profit] * 12
 irr = npf.irr(cash_flows)
