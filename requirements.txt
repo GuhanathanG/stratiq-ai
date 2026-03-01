@@ -1,0 +1,8 @@
+streamlit
+openai
+python-dotenv
+numpy
+pandas
+numpy-financial
+fpdf
+sqlalchemy
