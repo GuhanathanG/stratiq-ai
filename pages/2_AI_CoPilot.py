@@ -3,6 +3,11 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
+# ===== AUTH PROTECTION =====
+if not st.session_state.get("authenticated", False):
+    st.warning("Please login first.")
+    st.stop()
+
 st.set_page_config(layout="wide")
 
 load_dotenv()
