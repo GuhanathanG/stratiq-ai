@@ -74,7 +74,7 @@ df = pd.DataFrame({
 
 st.line_chart(df.set_index("Month"))
 
-# ===== SAVE SCENARIO =====
+# ===== SAVE SCENARIO (USER-SPECIFIC) =====
 
 st.markdown("---")
 st.markdown("## 💾 Save Scenario")
@@ -84,9 +84,11 @@ if st.button("Save Current Scenario"):
     conn = sqlite3.connect("stratiq.db")
     cursor = conn.cursor()
 
+    # Create table if not exists (with username)
     cursor.execute("""
     CREATE TABLE IF NOT EXISTS scenarios (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
+        username TEXT,
         price REAL,
         units REAL,
         profit REAL,
@@ -95,10 +97,12 @@ if st.button("Save Current Scenario"):
     )
     """)
 
+    # Insert scenario with current logged-in user
     cursor.execute("""
-    INSERT INTO scenarios (price, units, profit, irr, ltv_cac)
-    VALUES (?, ?, ?, ?, ?)
+    INSERT INTO scenarios (username, price, units, profit, irr, ltv_cac)
+    VALUES (?, ?, ?, ?, ?, ?)
     """, (
+        st.session_state.username,
         price,
         units,
         profit,
