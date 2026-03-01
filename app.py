@@ -1,4 +1,5 @@
 import streamlit as st
+from auth import init_auth_db, register_user, login_user, logout
 
 st.set_page_config(
     page_title="STRATIQ AI",
@@ -6,89 +7,63 @@ st.set_page_config(
     layout="wide"
 )
 
-# ===== PREMIUM DARK FINTECH THEME =====
+# ===== INIT AUTH DB =====
+init_auth_db()
 
-st.markdown("""
-<style>
-body {
-    background-color: #0e1117;
-    color: #ffffff;
-}
+# ===== SESSION STATE =====
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
 
-[data-testid="stSidebar"] {
-    background: linear-gradient(180deg, #111827, #0f172a);
-}
+if "username" not in st.session_state:
+    st.session_state.username = None
 
-.block-container {
-    padding-top: 2rem;
-}
+# ===== LOGIN / REGISTER UI =====
 
-h1 {
-    font-size: 3rem;
-    font-weight: 700;
-    background: linear-gradient(90deg,#00f5d4,#00bbf9);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-.metric-card {
-    background: rgba(255,255,255,0.05);
-    padding: 20px;
-    border-radius: 15px;
-    backdrop-filter: blur(10px);
-    box-shadow: 0px 4px 20px rgba(0,0,0,0.3);
-}
-
-.stButton>button {
-    background: linear-gradient(90deg,#00f5d4,#00bbf9);
-    color: black;
-    border-radius: 10px;
-    font-weight: 600;
-    padding: 0.6rem 1.5rem;
-}
-</style>
-""", unsafe_allow_html=True)
-
-# ===== HERO SECTION =====
-
-st.markdown("# STRATIQ AI")
-st.markdown("### Financial Decision Intelligence Engine for Founders & Investors")
-
+st.markdown("# 🚀 STRATIQ AI")
+st.markdown("### Secure Financial Intelligence Platform")
 st.markdown("---")
 
-col1, col2, col3 = st.columns(3)
+if not st.session_state.authenticated:
 
-with col1:
+    tab1, tab2 = st.tabs(["Login", "Register"])
+
+    # ----- LOGIN -----
+    with tab1:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            if login_user(username, password):
+                st.session_state.authenticated = True
+                st.session_state.username = username
+                st.success("Login successful!")
+                st.rerun()
+            else:
+                st.error("Invalid credentials")
+
+    # ----- REGISTER -----
+    with tab2:
+        new_user = st.text_input("New Username")
+        new_pass = st.text_input("New Password", type="password")
+
+        if st.button("Register"):
+            if register_user(new_user, new_pass):
+                st.success("Registration successful! Please login.")
+            else:
+                st.error("Username already exists")
+
+else:
+    st.success(f"Welcome, {st.session_state.username} 👋")
+
+    if st.button("Logout"):
+        logout()
+        st.rerun()
+
     st.markdown("""
-    <div class="metric-card">
-    <h3>AI Strategy</h3>
-    Intelligent financial recommendations
-    </div>
-    """, unsafe_allow_html=True)
+    ## Access your tools from the sidebar:
 
-with col2:
-    st.markdown("""
-    <div class="metric-card">
-    <h3>Scenario Intelligence</h3>
-    Dynamic modeling & simulations
-    </div>
-    """, unsafe_allow_html=True)
-
-with col3:
-    st.markdown("""
-    <div class="metric-card">
-    <h3>Investor Reports</h3>
-    Executive-grade output
-    </div>
-    """, unsafe_allow_html=True)
-
-st.markdown("---")
-
-st.markdown("""
-## ⚡ Built for Scale
-
-STRATIQ AI combines advanced financial modeling, AI advisory, 
-and investor-ready analytics into one decision intelligence platform.
-""")
-
-st.success("Premium Fintech Interface Activated")
+    • 📊 Financial Dashboard  
+    • 🤖 AI Co-Pilot  
+    • 📄 Executive Report  
+    • 📊 Scenario Comparison  
+    """)

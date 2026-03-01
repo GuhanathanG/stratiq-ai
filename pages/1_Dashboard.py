@@ -2,6 +2,12 @@ import streamlit as st
 import numpy as np
 import pandas as pd
 import numpy_financial as npf
+import sqlite3
+
+# ===== AUTH PROTECTION =====
+if not st.session_state.get("authenticated", False):
+    st.warning("Please login first.")
+    st.stop()
 
 st.set_page_config(layout="wide")
 
@@ -30,7 +36,7 @@ npv = npf.npv(discount_rate, cash_flows)
 months = np.arange(1, 13)
 projection = [revenue * (1 + growth_rate) ** m for m in months]
 
-# ===== STORE DATA FOR AI (AFTER irr & npv exist) =====
+# ===== STORE DATA FOR AI =====
 
 st.session_state.financial_data = {
     "price": price,
@@ -67,9 +73,8 @@ df = pd.DataFrame({
 })
 
 st.line_chart(df.set_index("Month"))
-# ===== SAVE SCENARIO =====
 
-import sqlite3
+# ===== SAVE SCENARIO =====
 
 st.markdown("---")
 st.markdown("## 💾 Save Scenario")
@@ -98,7 +103,7 @@ if st.button("Save Current Scenario"):
         units,
         profit,
         irr,
-        0  # placeholder if LTV/CAC not used yet
+        0
     ))
 
     conn.commit()
